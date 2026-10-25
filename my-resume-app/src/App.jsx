@@ -6,6 +6,8 @@ import pdfWorker from "pdfjs-dist/build/pdf.worker?url";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
 const COLORS = {
   bg: "#0d0f1a",
   panel: "#141727",
@@ -320,7 +322,7 @@ RESUME:
 ${cleanResume.slice(0, 6000)}
 `;
 
-      const res = await fetch("http://localhost:3001/analyze", {
+      const res = await fetch(`${API_URL}/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),

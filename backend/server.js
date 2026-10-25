@@ -1,5 +1,4 @@
 require('dotenv').config();
-apiKey: process.env.GROQ_API_KEY
 const express = require('express');
 const cors = require('cors');
 const Groq = require('groq-sdk');
@@ -10,13 +9,19 @@ app.use(express.json({ limit: '10mb' }));
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+app.get('/', (req, res) => res.send('Resume screening backend is running'));
+
 app.post('/analyze', async (req, res) => {
   try {
     const { prompt } = req.body;
+    if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+
     const message = await groq.chat.completions.create({
       model: 'openai/gpt-oss-20b',
-      max_tokens: 1024,
-      response_format: { type: "json_object" },
+      temperature: 0,
+      max_completion_tokens: 4096,
+      reasoning_effort: 'low',
+      response_format: { type: 'json_object' },
       messages: [
         {
           role: 'system',
@@ -25,8 +30,9 @@ app.post('/analyze', async (req, res) => {
         { role: 'user', content: prompt }
       ]
     });
+
     const content = message.choices[0].message.content;
-    console.log("Groq response:\n", content);
+    console.log('Groq response:\n', content);
     res.json({ content: [{ text: content }] });
   } catch (err) {
     console.error('Groq error:', err.message);
@@ -34,4 +40,5 @@ app.post('/analyze', async (req, res) => {
   }
 });
 
-app.listen(3001, () => console.log('Backend running on http://localhost:3001'));
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
